@@ -1,0 +1,339 @@
+Paper: http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
+
+Here are the latest updates to the simulator:
+
+Steering is controlled via position mouse instead of keyboard. This creates better angles for training. Note the angle is based on the mouse distance. To steer hold the left mouse button and move left or right. To reset the angle to 0 simply lift your finger off the left mouse button.
+You can toggle record by pressing R, previously you had to click the record button (you can still do that).
+When recording is finished, saves all the captured images to disk at the same time instead of trying to save them while the car is still driving periodically. You can see a save status and play back of the captured data.
+You can takeover in autonomous mode. While W or S are held down you can control the car the same way you would in training mode. This can be helpful for debugging. As soon as W or S are let go autonomous takes over again.
+Pressing the spacebar in training mode toggles on and off cruise control (effectively presses W for you).
+Added a Control screen
+Track 2 was replaced from a mountain theme to Jungle with free assets , Note the track is challenging
+You can use brake input in drive.py by issuing negative throttle values
+If you are interested here is the source code for the simulator repository
+
+When you first run the simulator, you’ll see a configuration screen asking what size and graphical quality you would like. We suggest running at the smallest size and the fastest graphical quality. We also suggest closing most other applications (especially graphically intensive applications) on your computer, so that your machine can devote its resources to running the simulator.
+
+Save the model from Keras: https://keras.io/getting-started/faq/#how-can-i-save-a-keras-model
+Lambda layers: https://keras.io/layers/core/#lambda
+Cropping: https://keras.io/layers/convolutional/#cropping2d
+
+In Keras, lambda layers can be used to create arbitrary functions that operate on each image as it passes through the layer.
+
+In this project, a lambda layer is a convenient way to parallelize image normalization. The lambda layer will also ensure that the model will normalize input images when making predictions in drive.py.
+
+That lambda layer could take each pixel in an image and run it through the formulas:
+
+pixel_normalized = pixel / 255
+
+pixel_mean_centered = pixel_normalized - 0.5
+
+A lambda layer will look something like:
+
+Lambda(lambda x: (x / 255.0) - 0.5)
+
+Below is some example code for how a lambda layer can be used.
+
+
+X_train = np.array(images)
+y_train = np.array(measurements)
+
+from keras.models import Sequential
+from keras.layers import Flatten, Dense, Lambda, Cropping
+from keras.layers import Convolution2D
+
+model = Sequential()
+model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,3))) # this for normalization, and the '-0.5' is for mean centering the image
+model.add(Cropping2D(cropping=((70,25), (0,0)))) # remove the top 70 pixels and the botton 25 pixels.
+model.add(Flatten())#model.add(Flatten(input_shape=(160,320,3)))
+model.add(Dense(1))
+
+model.compile(loss='mse', optimizer='Adam')
+model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=5)
+
+model.save('model.h5')
+exit()
+
+To Train the LeNet network:
+model.add(Convolution2D(6,5,5, activation='relu'))
+model.add(MaxPooling2D())
+model.add(Convolution2D(6,5,5, activation='relu'))
+model.add(MaxPooling2D())
+model.add(Flatten())
+model.add(Dense(120))
+model.add(Dense(84))
+model.add(Dense(1))
+
+
+Data augmentation:
+- Dependign on the track design, if it is a loop, the model might only learn to steer to the left, one way to solve this is to augment the data by flipping the images, and invert steering angles.
+
+augmented_images, augmented_measurements = [], []
+for image, measurement in zip(images, measurements):
+  augmented_images.append(image)
+  augmented_measurments.append(measurement)
+  augmented_images.append(cv2.flip(image,1))
+  augmented_measurements.append(measurement *-1.0)
+
+For flipping images:
+
+import numpy as np
+image_flipped = np.fliplr(image)
+measurement_flipped = -measurement
+
+for i in range(3):
+  source_path = line[i]
+  filename = source_path.split('/')[-1]
+  current_path = './data/IMG/' + filename
+
+
+with open(csv_file, 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            steering_center = float(row[3])
+
+            # create adjusted steering measurements for the side camera images
+            correction = 0.2 # this is a parameter to tune
+            steering_left = steering_center + correction
+            steering_right = steering_center - correction
+
+            # read in images from center, left and right cameras
+            path = "..." # fill in the path to your training IMG directory
+            img_center = process_image(np.asarray(Image.open(path + row[0])))
+            img_left = process_image(np.asarray(Image.open(path + row[1])))
+            img_right = process_image(np.asarray(Image.open(path + row[2])))
+
+            # add images and angles to data set
+            car_images.extend(img_center, img_left, img_right)
+            steering_angles.extend(steering_center, steering_left, steering_right)
+
+
+
+During training, you want to feed the left and right camera images to your model as if they were coming from the center camera. This way, you can teach your model how to steer if the car drifts off to the left or the right.
+
+Figuring out how much to add or subtract from the center angle will involve some experimentation.
+
+During prediction (i.e. "autonomous mode"), you only need to predict with the center camera image.
+
+It is not necessary to use the left and right images to derive a successful model. Recording recovery driving from the sides of the road is also effective.
+
+
+Cropping:
+
+from keras.models import Sequential, Model
+from keras.layers import Cropping2D
+import cv2
+
+# set up cropping2D layer
+model = Sequential()
+model.add(Cropping2D(cropping=((50,20), (0,0)), input_shape=(3,160,320)))
+...
+
+The example above crops:
+
+50 rows pixels from the top of the image
+20 rows pixels from the bottom of the image
+0 columns of pixels from the left of the image
+0 columns of pixels from the right of the image
+
+MORE COMPLEX ARQUITECTURE FROM NVIDIA
+
+model = Sequential()
+model.add(lambda...)
+model.add(cropping..)
+model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
+model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu")
+model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu")
+model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu")
+model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu")
+model.add(Flatten())
+model.add(Dense(100))
+model.add(Dense(50))
+model.add(Dense(10))
+
+Data collection:
+
+- Stay on the middle.
+- Stop recording, put on the side, and record to get back into the middle.
+- Drive the track in reverse order.
+- Use both tracks to gather data in order to make a better generalization.
+- Check if vehicle is misbehaving on turns on straight lane. We might need to collect more data in those situations.
+- Here are some general guidelines for data collection:
+Z two or three laps of center lane driving
+> one lap of recovery driving from the sides
+> one lap focusing on driving smoothly around curves
+
+
+
+Outputting Training and Validation Loss Metrics
+In Keras, the model.fit() and model.fit_generator() methods have a verbose parameter that tells Keras to output loss metrics as the model trains. The verbose parameter can optionally be set to verbose = 1 or verbose = 2.
+
+Setting model.fit(verbose = 1) will
+
+output a progress bar in the terminal as the model trains.
+output the loss metric on the training set as the model trains.
+output the loss on the training and validation sets after each epoch.
+With model.fit(verbose = 2), Keras will only output the loss on the training set and validation set after each epoch.
+
+Model History Object
+When calling model.fit() or model.fit_generator(), Keras outputs a history object that contains the training and validation loss for each epoch. Here is an example of how you can use the history object to visualize the loss:
+
+The following code shows how to use the model.fit() history object to produce the visualization.
+
+from keras.models import Model
+import matplotlib.pyplot as plt
+
+history_object = model.fit_generator(train_generator, samples_per_epoch =
+    len(train_samples), validation_data =
+    validation_generator,
+    nb_val_samples = len(validation_samples),
+    nb_epoch=5, verbose=1)
+
+### print the keys contained in the history object
+print(history_object.history.keys())
+
+### plot the training and validation loss for each epoch
+plt.plot(history_object.history['loss'])
+plt.plot(history_object.history['val_loss'])
+plt.title('model mean squared error loss')
+plt.ylabel('mean squared error loss')
+plt.xlabel('epoch')
+plt.legend(['training set', 'validation set'], loc='upper right')
+plt.show()
+
+
+
+How to Use Generators
+The images captured in the car simulator are much larger than the images encountered in the Traffic Sign Classifier Project, a size of 160 x 320 x 3 compared to 32 x 32 x 3. Storing 10,000 traffic sign images would take about 30 MB but storing 10,000 simulator images would take over 1.5 GB. That's a lot of memory! Not to mention that preprocessing data can change data types from an int to a float, which can increase the size of the data by a factor of 4.
+
+Generators can be a great way to work with large amounts of data. Instead of storing the preprocessed data in memory all at once, using a generator you can pull pieces of the data and process them on the fly only when you need them, which is much more memory-efficient.
+
+A generator is like a coroutine, a process that can run separately from another main routine, which makes it a useful Python function. Instead of using return, the generator uses yield, which still returns the desired output values but saves the current values of all the generator's variables. When the generator is called a second time it re-starts right after the yield statement, with all its variables set to the same values as before.
+
+Below is a short quiz using a generator. This generator appends a new Fibonacci number to its list every time it is called. To pass, simply modify the generator's yield so it returns a list instead of 1. The result will be we can get the first 10 Fibonacci numbers simply by calling our generator 10 times. If we need to go do something else besides generate Fibonacci numbers for a while we can do that and then always just call the generator again whenever we need more Fibonacci numbers.
+
+def fibonacci():
+    numbers_list = []
+    while 1:
+        if(len(numbers_list) < 2):
+            numbers_list.append(1)
+        else:
+            numbers_list.append(numbers_list[-1] + numbers_list[-2])
+        yield  numbers_list # change this line so it yields its list instead of 1
+
+our_generator = fibonacci()
+my_output = []
+
+for i in range(10):
+    my_output = (next(our_generator))
+
+print(my_output)
+
+
+
+Here is an example of how you could use a generator to load data and preprocess it on the fly, in batch size portions to feed into your Behavioral Cloning model .
+
+
+import os
+import csv
+
+samples = []
+with open('./driving_log.csv') as csvfile:
+    reader = csv.reader(csvfile)
+    for line in reader:
+        samples.append(line)
+
+from sklearn.model_selection import train_test_split
+train_samples, validation_samples = train_test_split(samples, test_size=0.2)
+
+import cv2
+import numpy as np
+import sklearn
+
+def generator(samples, batch_size=32):
+    num_samples = len(samples)
+    while 1: # Loop forever so the generator never terminates
+        shuffle(samples)
+        for offset in range(0, num_samples, batch_size):
+            batch_samples = samples[offset:offset+batch_size]
+
+            images = []
+            angles = []
+            for batch_sample in batch_samples:
+                name = './IMG/'+batch_sample[0].split('/')[-1]
+                center_image = cv2.imread(name)
+                center_angle = float(batch_sample[3])
+                images.append(center_image)
+                angles.append(center_angle)
+
+            # trim image to only see section with road
+            X_train = np.array(images)
+            y_train = np.array(angles)
+            yield sklearn.utils.shuffle(X_train, y_train)
+
+# compile and train the model using the generator function
+train_generator = generator(train_samples, batch_size=32)
+validation_generator = generator(validation_samples, batch_size=32)
+
+ch, row, col = 3, 80, 320  # Trimmed image format
+
+model = Sequential()
+# Preprocess incoming data, centered around zero with small standard deviation
+model.add(Lambda(lambda x: x/127.5 - 1.,
+        input_shape=(ch, row, col),
+        output_shape=(ch, row, col)))
+model.add(... finish defining the rest of your model architecture here ...)
+
+model.compile(loss='mse', optimizer='adam')
+model.fit_generator(train_generator, samples_per_epoch= /
+            len(train_samples), validation_data=validation_generator, /
+            nb_val_samples=len(validation_samples), nb_epoch=3)
+
+"""
+If the above code throw exceptions, try
+model.fit_generator(train_generator, steps_per_epoch= len(train_samples),
+validation_data=validation_generator, validation_steps=len(validation_samples), epochs=5, verbose = 1)
+"""
+
+
+Recording Video in Autonomous Mode:
+
+python drive.py model.h5 run1
+
+The fourth argument, run1, is the directory in which to save the images seen by the agent. If the directory already exists, it'll be overwritten.
+
+python video.py run1
+
+Creates a video based on images found in the run1 directory.
+
+python video.py run1 --fps 48
+
+Hints:
+
+1. How to use Python generators in Keras. This was critical as I was running out of memory on my laptop
+just trying to read in all the image data. Using generators allows me to only read in what I need at any
+point in time. Very useful.
+2. Use a GPU. This should almost be a prerequisite. It is too frustrating waiting for hours for results on
+CPU. I must have run training 100 times over the past 3 weeks and it was driving me crazy. Using a
+GTX980M was around 20x faster in training that a quad­core Haswell CPU.
+3. Use an analog joystick. This also should be a prerequisite. I'm not sure if its even possible to train with
+keyboard input. I think some have managed it, bu for me it's a case of garbage in, garbage out.
+4. Use successive refinement of a 'good' model. This really saves time and ensures that you converge on
+a solution faster. So when you get a model working a little bit, say passing the first corner, then use that model as a starting point for your next training session (kinda like Transfer Learning). Generate some
+new IMG data, lower the learning rate, and 'fine tune' this model.
+5. Use the 50Hz simulator. This generates much smoother driving angle data. Should be the default. You
+can find a link to download this on the Slack channel. Choose the fastest graphic quality and lowest
+screen resolution has helped the model to perform better
+6. You need at least 40k samples to get a useful initial model. Anything less was not producing anything
+good for me.
+7. Copy the Nvidia pipeline. It works :) And it's not too complex.
+8. Re­size the input image. I was able to size the image down by 2, reducing the number of pixels by 4.
+This really helped speed up model training and did not seem to impact the accuracy.
+9. I made use of the left and right camera angles also, where I modified the steering angles slightly in
+these cases. This helped up the number of test cases, and these help cases where the car is off center
+and teaches it to steer back to the middle.
+10. Around 5 epochs seems to be enough training. Any more does not reduce the mse much if at all.
+11. When you're starting out, pick three images from the .csv file, one with negative steering, one with
+straight, and one with right steering. Train a model with just those three images and see if you can get it
+to predict them correctly. This will tell you that your model is good and your turn­around time will be very
+quick. Then you can start adding more training data
