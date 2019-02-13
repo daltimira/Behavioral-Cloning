@@ -1,0 +1,50 @@
+1- Set up local environment.
+- Run local simulator and generate some image data
+
+2- Implement code that is able to load data and split the data in training and  validation (see traffic project and notes of behavioral project).
+- See notes.txt to read the csv file for reading images.
+
+3- Implement a basic model that is trained with few images and is able to predict the steering angle from these images. And that this model can be loaded for testing (with autonomous mode).
+
+5- Implement method to validate the model and get some results (check the notes.txt).
+- Output training and validation loss metrics (see notes.txt).
+
+6- Save a model, and be able to reload the model to add new more data for futher refinement ( see LabTransferLearning.txt).
+
+7- Implement pre-processing of the image data (see the notes.txt)
+- Image resize by 2.
+- Convert to gray scale.
+- Crop.
+- Normalize.
+
+8- Implement image augmentation (see notes.txt). Flip horizontally and reverse steering angles.
+
+9- Add left and right images with corrected steering angles.
+
+10- Use generators to process data on the fly (not store in memory). See notes.txt.
+
+11- Implement the model arquitecture of NVIDIA.
+
+12- Add regularization (dropouts).
+
+13- Move all the code in the online workspace and be able to run the simulator there (create another git hub repo).
+
+14- Data collection (see notes.txt).
+- Run the simulator with the right specs: 50 HZ, fastest graphic quality, lowest screen resolution, max of 5 epochs.
+- Record data track 1 and track 2.
+- Record data in reverse order.
+- Recovery from left to center, and from right to center.
+
+15- Provide summary of the dataset (see Traffic project).
+
+16- Create a model from the data and identify improvements:
+- Record more data in specific scenarios (recovery?).
+- Is model underfitting or overfitting?
+
+17- Improve the model based on the identified in prior point.
+
+18- Run the car in autonomous mode and record the video in autonomous mode.
+
+19- Write up.
+
+20- Submit the project.
