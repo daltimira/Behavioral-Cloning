@@ -1,15 +1,19 @@
-1- Set up local environment.
+DIJOUS
+
+DONE - Set up local environment.
 - Run local simulator and generate some image data
 
-2- Implement code that is able to load data and split the data in training and  validation (see traffic project and notes of behavioral project).
+DONE - Implement code that is able to load data and split the data in training and  validation (see traffic project and notes of behavioral project).
 - See notes.txt to read the csv file for reading images.
 
-3- Implement a basic model that is trained with few images and is able to predict the steering angle from these images. And that this model can be loaded for testing (with autonomous mode).
+*3- Implement a basic model that is trained with few images and is able to predict the steering angle from these images. And that this model can be loaded for testing (with autonomous mode).
+
+DIVENDRES
 
 5- Implement method to validate the model and get some results (check the notes.txt).
 - Output training and validation loss metrics (see notes.txt).
 
-6- Save a model, and be able to reload the model to add new more data for futher refinement ( see LabTransferLearning.txt).
+6- Save a model, and be able to reload the model to add new more data for further refinement ( see LabTransferLearning.txt).
 
 7- Implement pre-processing of the image data (see the notes.txt)
 - Image resize by 2.
@@ -27,6 +31,8 @@
 
 12- Add regularization (dropouts).
 
+DISSABTE
+
 13- Move all the code in the online workspace and be able to run the simulator there (create another git hub repo).
 
 14- Data collection (see notes.txt).
@@ -43,8 +49,12 @@
 
 17- Improve the model based on the identified in prior point.
 
+DIUMENGE
+
 18- Run the car in autonomous mode and record the video in autonomous mode.
 
-19- Write up.
+19- Check Rubik points if I have completed all the points.
 
-20- Submit the project.
+20- Write up.
+
+21- Submit the project.
