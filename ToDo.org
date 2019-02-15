@@ -13,23 +13,24 @@ DIVENDRES
 DONE - Implement method to validate the model and get some results (check the notes.txt).
 - Output training and validation loss metrics (see notes.txt).
 
-6- Save a model, and be able to reload the model to add new more data for further refinement ( see LabTransferLearning.txt).
-
-7- Implement pre-processing of the image data (see the notes.txt)
+6- Implement pre-processing of the image data (see the notes.txt)
 - Image resize by 2.
 - Convert to gray scale.
-- Crop.
-- Normalize.
+DONE Crop.
+DONE Normalize.
 
-8- Implement image augmentation (see notes.txt). Flip horizontally and reverse steering angles.
+7- Implement image augmentation (see notes.txt). Flip horizontally and reverse steering angles.
 
-9- Add left and right images with corrected steering angles.
+8- Add left and right images with corrected steering angles.
 
 DONE - Use generators to process data on the fly (not store in memory). See notes.txt.
 
-11- Implement the model arquitecture of NVIDIA.
+9- Implement the model arquitecture of NVIDIA.
 
-12- Add regularization (dropouts).
+10- Add regularization (dropouts).
+
+11- Save a model, and be able to reload the model to add new more data for further refinement ( see LabTransferLearning.txt).
+- Save just the best model.
 
 DISSABTE
 
