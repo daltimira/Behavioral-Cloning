@@ -6,11 +6,11 @@ DONE - Set up local environment.
 DONE - Implement code that is able to load data and split the data in training and  validation (see traffic project and notes of behavioral project).
 - See notes.txt to read the csv file for reading images.
 
-*3- Implement a basic model that is trained with few images and is able to predict the steering angle from these images. And that this model can be loaded for testing (with autonomous mode).
+DONE- Implement a basic model that is trained with few images and is able to predict the steering angle from these images. And that this model can be loaded for testing (with autonomous mode).
 
 DIVENDRES
 
-5- Implement method to validate the model and get some results (check the notes.txt).
+DONE - Implement method to validate the model and get some results (check the notes.txt).
 - Output training and validation loss metrics (see notes.txt).
 
 6- Save a model, and be able to reload the model to add new more data for further refinement ( see LabTransferLearning.txt).
@@ -25,7 +25,7 @@ DIVENDRES
 
 9- Add left and right images with corrected steering angles.
 
-10- Use generators to process data on the fly (not store in memory). See notes.txt.
+DONE - Use generators to process data on the fly (not store in memory). See notes.txt.
 
 11- Implement the model arquitecture of NVIDIA.
 
