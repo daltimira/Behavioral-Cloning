@@ -21,11 +21,11 @@ DONE Normalize.
 
 7- Implement image augmentation (see notes.txt). Flip horizontally and reverse steering angles.
 
-8- Add left and right images with corrected steering angles.
+DONE- Add left and right images with corrected steering angles.
 
 DONE - Use generators to process data on the fly (not store in memory). See notes.txt.
 
-9- Implement the model arquitecture of NVIDIA.
+DONE - Implement the model arquitecture of NVIDIA.
 
 10- Add regularization (dropouts).
 
