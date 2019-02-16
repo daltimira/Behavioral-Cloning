@@ -13,13 +13,13 @@ DIVENDRES
 DONE - Implement method to validate the model and get some results (check the notes.txt).
 - Output training and validation loss metrics (see notes.txt).
 
-6- Implement pre-processing of the image data (see the notes.txt)
+DONE- Implement pre-processing of the image data (see the notes.txt)
 - Image resize by 2.
-- Convert to gray scale.
+DONE Convert to gray scale.
 DONE Crop.
 DONE Normalize.
 
-7- Implement image augmentation (see notes.txt). Flip horizontally and reverse steering angles.
+DONE- Implement image augmentation (see notes.txt). Flip horizontally and reverse steering angles.
 
 DONE- Add left and right images with corrected steering angles.
 
@@ -34,7 +34,7 @@ DONE - Implement the model arquitecture of NVIDIA.
 
 DISSABTE
 
-13- Move all the code in the online workspace and be able to run the simulator there (create another git hub repo).
+*- Move all the code in the online workspace and be able to run the simulator there (create another git hub repo).
 
 14- Data collection (see notes.txt).
 - Run the simulator with the right specs: 50 HZ, fastest graphic quality, lowest screen resolution, max of 5 epochs.
