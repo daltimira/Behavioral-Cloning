@@ -2,15 +2,18 @@ import cv2
 import os
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
 import sklearn
 from sklearn.model_selection import train_test_split
-import tensorflow as tf
+#import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers import Convolution2D
+from keras.callbacks import ModelCheckpoint
+from keras.callbacks import EarlyStopping
 from random import shuffle
 
-path_data = './data_sample/'
+path_data = './data_sample_save/'
 
 def generator(samples, batch_size=32):
     num_samples = len(samples)
@@ -79,7 +82,7 @@ def main():
     model = Sequential()
     model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,3))) # this for normalization, and the '-0.5' is for mean centering the image
     # Add a lambda layer in order to convert to grayscale
-    model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x)))
+    #model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x)))
     model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
     #model.add(Flatten()) #model.add(Flatten(input_shape=(160,320,3)))
     model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
@@ -95,7 +98,21 @@ def main():
 
     model.compile(loss='mse', optimizer='Adam')
     #history_object  = model.fit_generator(train_generator, samples_per_epoch= len(train_samples), validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3, verbose = 1)
-    history_object = model.fit_generator(train_generator, steps_per_epoch= len(train_samples), validation_data=validation_generator, validation_steps=len(validation_samples), epochs=3, verbose = 2)
+
+    checkpoint = ModelCheckpoint(filepath="./bestModel/dac_net.h5", monitor='val_loss', save_best_only=True)
+    stopper = EarlyStopping(monitor='val_loss', min_delta=0.0003, patience=5)
+
+    history_object = model.fit_generator(train_generator, steps_per_epoch= len(train_samples), validation_data=validation_generator, validation_steps=len(validation_samples), epochs=3, verbose = 2,  callbacks=[checkpoint, stopper])
+
+    ### plot the training and validation loss for each epoch
+    plt.plot(history_object.history['loss'])
+    plt.plot(history_object.history['val_loss'])
+    plt.title('model mean squared error loss')
+    plt.ylabel('mean squared error loss')
+    plt.xlabel('epoch')
+    plt.legend(['training set', 'validation set'], loc='upper right')
+    #plt.show()
+    plt.savefig("meanSquaredErrorLoss.png")
 
     # Save the model
     model.save("dac_net.h5")
