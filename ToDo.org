@@ -50,7 +50,7 @@ DIMARTS- Start the write up (in a notebook) explaining what has been done so far
 - Provide a summary of the dataset of the first model.
 - Is the model underfitting or overfitting?
 
-DIMECRES- Clean code (local and also upload this one to the server).
+DONE- Clean code (local and also upload this one to the server).
           Save a model, and be able to reload the model to add new more data for further refinement ( see LabTransferLearning.txt).
             - Save just the best model.
 
