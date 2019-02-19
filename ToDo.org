@@ -29,38 +29,44 @@ DONE - Implement the model arquitecture of NVIDIA.
 
 10- Add regularization (dropouts).
 
-*- Save a model, and be able to reload the model to add new more data for further refinement ( see LabTransferLearning.txt).
-- Save just the best model.
-
-DISSABTE
-
 DONE - Move all the code in the online workspace and be able to run the simulator there (create another git hub repo).
 
-**- Make sure the training of the model with provided data works correctly, and that the model can be used correctly in the simulator.
+DONE Make sure the training of the model with provided data works correctly, and that the model can be used correctly in the simulator.
 
 The model with pre-data has num samples:
 8036 (which involves 8036*3*3 images).
 
-14- Create a model from the data and identify improvements:
+Create a model from the data and identify improvements:
 - Record more data in specific scenarios (recovery?).
 - Is model underfitting or overfitting?
 
-15- Data collection (see notes.txt).
+DONE- Improve the model based on the identified in prior point.
+
+-------------------------
+
+DONE- Record a video with the obtained model in autonomous mode, in the two tracks.
+
+DIMARTS- Start the write up (in a notebook) explaining what has been done so far, the model implemented, the results obtained, drawbacks and what can be improved.
+- Provide a summary of the dataset of the first model.
+- Is the model underfitting or overfitting?
+
+DIMECRES- Clean code (local and also upload this one to the server).
+          Save a model, and be able to reload the model to add new more data for further refinement ( see LabTransferLearning.txt).
+            - Save just the best model.
+
+DIMECRES- Record more data. Data collection (see notes.txt).
 - Run the simulator with the right specs: 50 HZ, fastest graphic quality, lowest screen resolution, max of 5 epochs.
 - Record data track 1 and track 2.
 - Record data in reverse order.
 - Recovery from left to center, and from right to center.
 
-16- Improve the model based on the identified in prior point.
+DIMECRES- Do additional training and write the results obtained from recording more data.
+- Provide a summary of the dataset of the new data.
 
-17- Provide summary of the dataset (see Traffic project).
+DIMECRES- Check Rubik points if I have completed all the points.
 
-DIUMENGE
+DIJOUS- Finish the write up and other steps to finalize the project.
 
-18- Run the car in autonomous mode and record the video in autonomous mode.
+DIJOUS- Summit the project.
 
-19- Check Rubik points if I have completed all the points.
-
-20- Write up.
-
-21- Submit the project.
+9- Write notes about (from the Q&A) about how to introduce the grayscale and resizing of the images.

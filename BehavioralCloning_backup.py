@@ -11,10 +11,10 @@ from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers import Convolution2D
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import EarlyStopping
-from keras.models import load_model
 from random import shuffle
 
 #path_data = './data/data/'
+#path_data = '/opt/carnd_p3/data/'
 path_data = './data/data/'
 old_model = "./dac_net_v0_epoch5.h5"
 new_model = "./dac_net_v1_epoch5.h5"
@@ -37,7 +37,7 @@ def generator(samples, batch_size=32):
                 images.append(center_image)
                 angles.append(center_angle)
 
-                # left image
+                #left image
                 name = path_data + 'IMG/'+batch_sample[1].split('/')[-1]
                 left_image = cv2.imread(name)
                 left_angle = float(batch_sample[3]) + correction
@@ -71,10 +71,15 @@ def generator(samples, batch_size=32):
 
 def main():
     samples = []
+    i = 0
     with open(path_data + 'driving_log.csv') as csvfile:
         reader = csv.reader(csvfile)
         for line in reader:
-            samples.append(line)
+            if (i > 0):
+                samples.append(line)
+            i = i + 1
+            if (i > 100):
+                break
 
     print("num samples: ")
     print(len(samples))
@@ -85,36 +90,31 @@ def main():
     train_generator = generator(train_samples, batch_size=32)
     validation_generator = generator(validation_samples, batch_size=32)
 
-    if not os.path.isfile(old_model):
-        print("Creating a new model")
-        model = Sequential()
-        model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,3))) # this for normalization, and the '-0.5' is for mean centering the image
-        # Add a lambda layer in order to convert to grayscale
-        #model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x)))
-        model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
-        #model.add(Flatten()) #model.add(Flatten(input_shape=(160,320,3)))
-        model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
-        model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
-        model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu"))
-        model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu"))
-        model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu"))
-        model.add(Flatten())
-        model.add(Dense(100))
-        model.add(Dense(50))
-        model.add(Dense(10))
-        model.add(Dense(1))
+    print("Creating a new model")
+    model = Sequential()
+    model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,3))) # this for normalization, and the '-0.5' is for mean centering the image
+    # Add a lambda layer in order to convert to grayscale
+    #model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x)))
+    model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
+    #model.add(Flatten()) #model.add(Flatten(input_shape=(160,320,3)))
+    model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
+    model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
+    model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu"))
+    model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu"))
+    model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu"))
+    model.add(Flatten())
+    model.add(Dense(100))
+    model.add(Dense(50))
+    model.add(Dense(10))
+    model.add(Dense(1))
 
-        model.compile(loss='mse', optimizer='Adam')
-    else:
-        print("Loading model")
-        model = load_model(old_model)
-
+    model.compile(loss='mse', optimizer='Adam')
     #history_object  = model.fit_generator(train_generator, samples_per_epoch= len(train_samples), validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3, verbose = 1)
 
-    checkpoint = ModelCheckpoint(filepath=new_model, monitor='val_loss', save_best_only=True)
+    checkpoint = ModelCheckpoint(filepath="./bestModel/dac_net_v0_epoch5_tmp.h5", monitor='val_loss', save_best_only=True)
     stopper = EarlyStopping(monitor='val_loss', min_delta=0.0003, patience=5)
 
-    history_object = model.fit_generator(train_generator, steps_per_epoch= len(train_samples), validation_data=validation_generator, validation_steps=len(validation_samples), epochs=5, verbose = 2, callbacks=[checkpoint, stopper])
+    history_object = model.fit_generator(train_generator, steps_per_epoch= len(train_samples), validation_data=validation_generator, validation_steps=len(validation_samples), epochs=5, verbose = 2,  callbacks=[checkpoint, stopper])
 
     ### plot the training and validation loss for each epoch
     plt.plot(history_object.history['loss'])
@@ -124,10 +124,10 @@ def main():
     plt.xlabel('epoch')
     plt.legend(['training set', 'validation set'], loc='upper right')
     #plt.show()
-    plt.savefig("meanSquaredErrorLoss_v1_epoch5.png")
+    plt.savefig("meanSquaredErrorLoss_v0_epoch5_tmp.png")
 
     # Save the model
-    #model.save("dac_net_v1_epoch1_sim.h5")
+    #model.save("dac_net_v0_epoch5.h5")
 
 if __name__ == "__main__":
     main()
