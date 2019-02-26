@@ -80,7 +80,7 @@ FOR RESUBMISSION:
 
 *- Add dropout layers and train with the existing data and see if this improves.
 
-- First using dropout of 0.5 after each convoluationlay layer and dense function.Num samples 8036, the ones given. 
+First using dropout of 0.5 after each convoluationlay layer and dense function.Num samples 8036, the ones given.
 
 2- Get more data that train vehicle move from the side to the center.
 
