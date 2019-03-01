@@ -5,19 +5,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sklearn
 from sklearn.model_selection import train_test_split
-#import tensorflow as tf
+import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D
-from keras.layers import Convolution2D
+from keras.layers import Convolution2D, Conv2D
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import EarlyStopping
 from keras.models import load_model
+from keras.layers import Dropout
 from random import shuffle
 
 #path_data = './data/data/'
-path_data = './data/data/'
-old_model = "./dac_net_v0_epoch5.h5"
-new_model = "./dac_net_v1_epoch5.h5"
+#path_data = './data_t1_moveCenterOnCurve/'
+#path_data = './data_t1_2/'
+path_data = './data/'
+old_model = "./dac_net_v8_regularization07_epoch5_data_gray.h5"
+new_model = "./dac_net_v13_regularization07_epoch5_data_gray_data_half.h5"
 
 def generator(samples, batch_size=32):
     num_samples = len(samples)
@@ -76,7 +79,7 @@ def main():
         for line in reader:
             samples.append(line)
 
-    print("num samples: ")
+    print("num samples data all!!!!: ")
     print(len(samples))
 
     train_samples, validation_samples = train_test_split(samples, test_size=0.2)
@@ -87,21 +90,26 @@ def main():
 
     if not os.path.isfile(old_model):
         print("Creating a new model")
+        
         model = Sequential()
-        model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,3))) # this for normalization, and the '-0.5' is for mean centering the image
         # Add a lambda layer in order to convert to grayscale
-        #model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x)))
-        model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
+        model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x), input_shape=(160,320,3)))
+        
+        #model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,1))) # this for normalization, and the '-0.5' is for mean centering the image
+        model.add(Lambda(lambda x:x/255 - 0.5))
+        model.add(Lambda(lambda x: tf.image.resize_images(x, size=[80,160])))
+        #model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
+        model.add(Cropping2D(cropping=((25,12), (0,0))))
         #model.add(Flatten()) #model.add(Flatten(input_shape=(160,320,3)))
-        model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
+        model.add(Conv2D(24, kernel_size=(5,5), strides=(2,2), padding = 'valid', activation="relu"))
         model.add(Dropout(0.7))
-        model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
+        model.add(Conv2D(36,kernel_size=(5,5),strides=(2,2), padding='valid', activation="relu"))
         model.add(Dropout(0.7))
-        model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu"))
+        model.add(Conv2D(48,kernel_size=(5,5),strides=(2,2), padding='valid', activation="relu"))
         model.add(Dropout(0.7))
-        model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu"))
+        model.add(Conv2D(64, kernel_size=(3,3),strides=(2,2), padding='same', activation="relu"))
         model.add(Dropout(0.7))
-        model.add(Convolution2D(64,3,3,subsample=(2,2), activation="relu"))
+        model.add(Conv2D(64,kernel_size=(3,3),strides=(2,2), padding='same', activation="relu"))
         model.add(Dropout(0.7))
         model.add(Flatten())
         model.add(Dense(100))
@@ -115,7 +123,7 @@ def main():
         model.compile(loss='mse', optimizer='Adam')
     else:
         print("Loading model")
-        model = load_model(old_model)
+        model = load_model(old_model,  custom_objects={"tf": tf})
 
     #history_object  = model.fit_generator(train_generator, samples_per_epoch= len(train_samples), validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3, verbose = 1)
 
@@ -132,10 +140,11 @@ def main():
     plt.xlabel('epoch')
     plt.legend(['training set', 'validation set'], loc='upper right')
     #plt.show()
-    plt.savefig("meanSquaredErrorLoss_v1_epoch5.png")
+    plt.savefig("meanSquaredErrorLoss_v13_regularization07_epoch5_gray_data_half.png")
 
     # Save the model
     #model.save("dac_net_v1_epoch1_sim.h5")
 
 if __name__ == "__main__":
     main()
+
