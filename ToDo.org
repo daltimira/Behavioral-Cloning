@@ -78,11 +78,16 @@ DIJOUS- Summit the project.
 
 FOR RESUBMISSION:
 
+load_model("model_path", custom_objects={"tf": tf}). https://github.com/keras-team/keras/issues/5298
+
+resized_input = Lambda(lambda image: tf.image.resize_images(image, (input_size, input_size)))(normal) 
+
+
 *- Add dropout layers and train with the existing data and see if this improves.
 
 First using dropout of 0.5 after each convoluationlay layer and dense function.Num samples 8036, the ones given.
 
-2- Get more data that train vehicle move from the side to the center.
+OK- Get more data that train vehicle move from the side to the center.
 
 3- Re-train with the old and new data together.
 
