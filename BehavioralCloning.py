@@ -20,7 +20,7 @@ from random import shuffle
 #path_data = './data_t1_2/'
 path_data = './data/'
 old_model = "./dac_net_v8_regularization07_epoch5_data_gray.h5"
-new_model = "./dac_net_v19_regularization00_epoch5_data_gray_data.h5"
+new_model = "./dac_net_v20_regularization05_once_epoch5_data.h5"
 
 def generator(samples, batch_size=32):
     num_samples = len(samples)
@@ -37,6 +37,7 @@ def generator(samples, batch_size=32):
                 name = path_data + 'IMG/'+batch_sample[0].split('/')[-1]
 
                 center_image = cv2.imread(name)
+                center_image = cv2.cvtColor(center_image, cv2.COLOR_BGR2RGB)
                 center_angle = float(batch_sample[3])
                 images.append(center_image)
                 angles.append(center_angle)
@@ -44,6 +45,7 @@ def generator(samples, batch_size=32):
                 # left image
                 name = path_data + 'IMG/'+batch_sample[1].split('/')[-1]
                 left_image = cv2.imread(name)
+                left_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
                 left_angle = float(batch_sample[3]) + correction
                 images.append(left_image)
                 angles.append(left_angle)
@@ -51,23 +53,26 @@ def generator(samples, batch_size=32):
                 #right image
                 name = path_data + 'IMG/'+batch_sample[2].split('/')[-1]
                 right_image = cv2.imread(name)
+                right_image = cv2.cvtColor(right_image, cv2.COLOR_BGR2RGB)
                 right_angle = float(batch_sample[3]) - correction
                 images.append(right_image)
                 angles.append(right_angle)
 
                 # I will do some image augmentation, will flip the tree images horizontally, and correct the angle
+                # we only flip images if we are in a curve (center angles is different zero) in order to help data balance.
+                # Flipping image when there is not a curve, might inbalance more the data, and the model is not helping learning something new.
+                if (center_angle != 0):
+                    # center image
+                    images.append(cv2.flip(center_image, 1))
+                    angles.append(center_angle * -1.0)
 
-                # center image
-                images.append(cv2.flip(center_image, 1))
-                angles.append(center_angle * -1.0)
+                    # left image
+                    images.append(cv2.flip(left_image, 1))
+                    angles.append(left_angle * -1.0)
 
-                # left image
-                images.append(cv2.flip(left_image, 1))
-                angles.append(left_angle * -1.0)
-
-                # right image
-                images.append(cv2.flip(right_image, 1))
-                angles.append(right_angle * -1.0)
+                    # right image
+                    images.append(cv2.flip(right_image, 1))
+                    angles.append(right_angle * -1.0)
 
             X_train = np.array(images)
             y_train = np.array(angles)
@@ -86,8 +91,8 @@ def main():
     train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
     # compile and train the model using the generator function
-    train_generator = generator(train_samples, batch_size=32)
-    validation_generator = generator(validation_samples, batch_size=32)
+    train_generator = generator(train_samples, batch_size=16)
+    validation_generator = generator(validation_samples, batch_size=16)
 
     if not os.path.isfile(old_model):
         print("Creating a new model")
@@ -99,23 +104,30 @@ def main():
         #model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,3))) # this for normalization, and the '-0.5' is for mean centering the image
         model.add(Lambda(lambda x:x/127.5 - 1.0, input_shape=(160,320,3)))
         #model.add(Lambda(lambda x:x/255 - 0.5))
-        #model.add(Lambda(lambda x: tf.image.resize_images(x, size=[80,160])))
-        model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
-        #model.add(Cropping2D(cropping=((25,12), (0,0))))
+        model.add(Lambda(lambda x: tf.image.resize_images(x, size=[80,160])))
+        #model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
+        model.add(Cropping2D(cropping=((25,12), (0,0))))
         #model.add(Flatten()) #model.add(Flatten(input_shape=(160,320,3)))
+
+        # changing stride to (1,1) as we have reduces the input image by 2
         model.add(Conv2D(24, kernel_size=(5,5), strides=(2,2), padding = 'valid', activation="relu"))
-        model.add(Dropout(0.2))
-        model.add(Conv2D(36,kernel_size=(5,5),strides=(2,2), padding='valid', activation="relu"))
-        model.add(Dropout(0.2))
-        model.add(Conv2D(48,kernel_size=(5,5),strides=(2,2), padding='valid', activation="relu"))
-        model.add(Dropout(0.2))
-        model.add(Conv2D(64, kernel_size=(3,3),strides=(2,2), padding='valid', activation="relu"))
-        model.add(Dropout(0.2))
-        model.add(Conv2D(64,kernel_size=(3,3),strides=(2,2), padding='valid', activation="relu"))
-        model.add(Dropout(0.2))
-        model.add(Flatten())
-        model.add(Dense(100))
         #model.add(Dropout(0.2))
+        model.add(Conv2D(36,kernel_size=(5,5),strides=(2,2), padding='valid', activation="relu"))
+        #model.add(Dropout(0.2))
+        model.add(Conv2D(48,kernel_size=(5,5),strides=(1,1), padding='valid', activation="relu"))
+        #model.add(Dropout(0.2))
+        model.add(Conv2D(64, kernel_size=(3,3),strides=(1,1), padding='valid', activation="relu"))
+        #model.add(Dropout(0.2))
+        #model.add(Conv2D(64,kernel_size=(3,3),strides=(1,1), padding='valid', activation="relu"))
+
+        model.add(Flatten())
+
+        model.add(Dropout(0.5))
+
+        model.add(Dense(100))
+
+        model.add(Dropout(0.5))
+
         model.add(Dense(50))
         #model.add(Dropout(0.2))
         model.add(Dense(10))
@@ -142,7 +154,7 @@ def main():
     plt.xlabel('epoch')
     plt.legend(['training set', 'validation set'], loc='upper right')
     #plt.show()
-    plt.savefig("meanSquaredErrorLoss_v19_regularization00_epoch5_gray_data.png")
+    plt.savefig("meanSquaredErrorLoss_v20_regularization05_epoch5_data.png")
 
     # Save the model
     #model.save("dac_net_v1_epoch1_sim.h5")
