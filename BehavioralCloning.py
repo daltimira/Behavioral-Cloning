@@ -20,7 +20,7 @@ from random import shuffle
 #path_data = './data_t1_2/'
 path_data = './data/'
 old_model = "./dac_net_v8_regularization07_epoch5_data_gray.h5"
-new_model = "./dac_net_v20_regularization05_once_epoch5_data.h5"
+new_model = "./dac_net_v20_regularization05_twice_epoch20_patient8_data.h5"
 
 def generator(samples, batch_size=32):
     num_samples = len(samples)
@@ -111,7 +111,7 @@ def main():
 
         # changing stride to (1,1) as we have reduces the input image by 2
         model.add(Conv2D(24, kernel_size=(5,5), strides=(2,2), padding = 'valid', activation="relu"))
-        #model.add(Dropout(0.2))
+        #model.add(Dropout(0.5))
         model.add(Conv2D(36,kernel_size=(5,5),strides=(2,2), padding='valid', activation="relu"))
         #model.add(Dropout(0.2))
         model.add(Conv2D(48,kernel_size=(5,5),strides=(1,1), padding='valid', activation="relu"))
@@ -142,9 +142,9 @@ def main():
     #history_object  = model.fit_generator(train_generator, samples_per_epoch= len(train_samples), validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3, verbose = 1)
 
     checkpoint = ModelCheckpoint(filepath=new_model, monitor='val_loss', save_best_only=True)
-    stopper = EarlyStopping(monitor='val_loss', min_delta=0.0003, patience=5)
+    stopper = EarlyStopping(monitor='val_loss', min_delta=0.0003, patience=8)
 
-    history_object = model.fit_generator(train_generator, steps_per_epoch= len(train_samples), validation_data=validation_generator, validation_steps=len(validation_samples), epochs=5, verbose = 2, callbacks=[checkpoint, stopper])
+    history_object = model.fit_generator(train_generator, steps_per_epoch= len(train_samples), validation_data=validation_generator, validation_steps=len(validation_samples), epochs=20, verbose = 2, callbacks=[checkpoint, stopper])
 
     ### plot the training and validation loss for each epoch
     plt.plot(history_object.history['loss'])
@@ -154,7 +154,7 @@ def main():
     plt.xlabel('epoch')
     plt.legend(['training set', 'validation set'], loc='upper right')
     #plt.show()
-    plt.savefig("meanSquaredErrorLoss_v20_regularization05_epoch5_data.png")
+    plt.savefig("meanSquaredErrorLoss_v20_regularization05_twice_epoch20_patient8_data.png")
 
     # Save the model
     #model.save("dac_net_v1_epoch1_sim.h5")
