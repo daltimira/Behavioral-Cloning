@@ -80,7 +80,7 @@ FOR RESUBMISSION:
 
 load_model("model_path", custom_objects={"tf": tf}). https://github.com/keras-team/keras/issues/5298
 
-resized_input = Lambda(lambda image: tf.image.resize_images(image, (input_size, input_size)))(normal) 
+resized_input = Lambda(lambda image: tf.image.resize_images(image, (input_size, input_size)))(normal)
 
 
 *- Add dropout layers and train with the existing data and see if this improves.
@@ -92,7 +92,5 @@ OK- Get more data that train vehicle move from the side to the center.
 3- Re-train with the old and new data together.
 
 4- Test and adjust the write up explaining the new additions.
-
-5- Write notes about (from the Q&A) about how to introduce the grayscale and resizing of the images.
 
 6- Write about information/feedback from the mentors about prior submission and other projects submissions.

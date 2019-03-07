@@ -15,9 +15,6 @@ from keras.models import load_model
 from keras.layers import Dropout
 from random import shuffle
 
-#path_data = './data/data/'
-#path_data = './data_t1_moveCenterOnCurve/'
-#path_data = './data_t1_2/'
 path_data = './data/'
 old_model = "./dac_net_v8_regularization07_epoch5_data_gray.h5"
 new_model = "./dac_net_v24_data.h5"
@@ -85,9 +82,6 @@ def main():
         for line in reader:
             samples.append(line)
 
-    print("num samples data all!!!!: ")
-    print(len(samples))
-
     train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
     # compile and train the model using the generator function
@@ -101,15 +95,13 @@ def main():
         # Add a lambda layer in order to convert to grayscale
         # model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x), input_shape=(160,320,3)))
 
-        #model.add(Lambda(lambda x:x/255 - 0.5, input_shape=(160,320,3))) # this for normalization, and the '-0.5' is for mean centering the image
+        # this for normalization, and the '-0.5' is for mean centering the image
         model.add(Lambda(lambda x:x/127.5 - 1.0, input_shape=(160,320,3)))
-        #model.add(Lambda(lambda x:x/255 - 0.5))
         model.add(Lambda(lambda x: tf.image.resize_images(x, size=[80,160])))
         #model.add(Cropping2D(cropping=((55,25), (0,0)))) # remove the top 55 pixels and the botton 25 pixels.
         model.add(Cropping2D(cropping=((25,12), (0,0))))
         #model.add(Flatten()) #model.add(Flatten(input_shape=(160,320,3)))
 
-        # changing stride to (1,1) as we have reduces the input image by 2
         model.add(Conv2D(24, kernel_size=(5,5), strides=(2,2), padding = 'valid', activation="relu"))
         model.add(Dropout(0.3))
         model.add(Conv2D(36,kernel_size=(5,5),strides=(2,2), padding='valid', activation="relu"))
